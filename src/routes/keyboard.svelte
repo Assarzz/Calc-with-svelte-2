@@ -1,4 +1,6 @@
 <script>
+    import { createEventDispatcher } from "svelte";
+    const dispatch = createEventDispatcher()
     export let clicks, updateClicks
 
     let col1 = [
@@ -25,6 +27,8 @@
     let col5 = [
         { value: "*", clicked: false, type: "operator"},
         { value: "/", clicked: false, type: "operator"},
+        { value: "=", clicked: false, type: "operator"},
+
     ]
 
     const keyboard = [...col1, ...col2, ...col3, ...col4, ...col5];
@@ -39,7 +43,7 @@
     function click(col, index){
 
         updateClicks()
-
+        dispatch("buttonclick", col[index])
 
         col[index].clicked = true
 
@@ -96,7 +100,7 @@
 
     #keyboard{
         display: inline-flex;
-        background-color: rgba(0, 0, 0, 0.827);
+        background-color: rgba(0, 0, 0, 0.1);
         div{
             display: flex;
             flex-direction: column;
@@ -125,12 +129,12 @@
 
 
     .red {
-        background-color: rgba(200, 0, 0, 0.6);
+        background-color: rgba(200, 100, 1000, 0.6);
     }
     .green {
-        background-color: rgba(0, 200, 0, 0.6);
+        background-color: rgba(100, 200, 100, 0.6);
     }
     .blue {
-        background-color: rgba(0, 0, 200, 0.6);
+        background-color: rgba(100, 100, 200, 0.6);
     }
 </style>
