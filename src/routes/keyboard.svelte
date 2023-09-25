@@ -1,7 +1,6 @@
 <script>
     import { createEventDispatcher } from "svelte";
     const dispatch = createEventDispatcher()
-    export let clicks, updateClicks
 
     let col1 = [
         { value: "1", clicked: false, type: "number"},
@@ -42,7 +41,6 @@
 
     function click(col, index){
 
-        updateClicks()
         dispatch("buttonclick", col[index])
 
         col[index].clicked = true

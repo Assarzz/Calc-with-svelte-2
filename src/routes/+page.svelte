@@ -3,39 +3,26 @@
     import Keyboard from "./keyboard.svelte";
     import { displayValue } from "./stores.js";
 
-    let clicks = 0;
 
     let eq = NaN;
 
-    function updateClicks() {
-        clicks++;
-    }
 
     function handleClickEvent(event) {
 
         $displayValue += event.detail.value;
 
-        if (event.detail.type == "number") {
-
-
-            this.calcArray[this.calcArray.length-1].updateValue(event.detail.value)
-            
-
-            Equation.calcArray.push(
-                new ArrayItem(
-                    event.detail.type,
-                    event.detail.value,
-                    parseFloat(event.detail.value)
-
-                )
-            );
-        } else {
+        if (event.detail.type == "number") {            
+            Equation.updateCurrentWorkingArrayItem(event.detail.value)
+        } 
+        else {
             Equation.calcArray.push(
                 new ArrayItem(event.detail.type, event.detail.value)
             );
+            Equation.renewCurrentWorkingItem()
         }
 
         // if Equation is valid we can perform Equation.calculate()
+        console.log(Equation.calcArray)
         if(Equation.calculate()){
             eq = Equation.equationValue;
         }
@@ -48,18 +35,15 @@
     }
 
     class ArrayItem {
-        constructor(type, stringValue, intNumberValue = NaN) {
+        constructor(type, stringValue, numberValue = NaN) {
             this.type = type;
-            this.intNumberValue = intNumberValue;
+            this.numberValue = numberValue;
             this.hasComma = this.type == "number" ? this.checkComma() : NaN;
             this.stringValue = stringValue;
         }
-        updateValue(newStringValue){
-            // update arrayItem value
-        }
 
         checkComma() {
-            if (this.intNumberValue - Math.floor(this.intNumberValue) != 0) {
+            if (this.numberValue - Math.floor(this.numberValue) != 0) {
                 return true;
             }
             return false;
@@ -81,7 +65,7 @@
                 if (this.calcArray[index].stringValue == "*") {
                     let before = this.calcArray.slice(0, index - 1); // the arry before and after the two numbers should be joined with the new product in the middle.
                     let after = this.calcArray.slice(index + 2);
-                    let newNumberValue = this.calcArray[index - 1].intNumberValue * this.calcArray[index + 1].intNumberValue;
+                    let newNumberValue = this.calcArray[index - 1].numberValue * this.calcArray[index + 1].numberValue;
                     let newValue = new ArrayItem(
                         "number",
                         newNumberValue.toString(),
@@ -93,7 +77,7 @@
                 } else if (this.calcArray[index].stringValue == "/") {
                     let before = this.calcArray.slice(0, index - 1); // the arry before and after the two numbers should be joined with the new product in the middle.
                     let after = this.calcArray.slice(index + 2);
-                    let newNumberValue = this.calcArray[index - 1].intNumberValue / this.calcArray[index + 1].intNumberValue;
+                    let newNumberValue = this.calcArray[index - 1].numberValue / this.calcArray[index + 1].numberValue;
 
 
                     let newValue = new ArrayItem(
@@ -110,36 +94,57 @@
         };
         const additionAndSubtraction = () => {
             let newEquationValue = 0;
-            newEquationValue += this.calcArray[0].intNumberValue;
+            newEquationValue += this.calcArray[0].numberValue;
             for (let index = 1; index < this.calcArray.length; index++) {
-                console.log("here")
 
                 if (this.calcArray[index].stringValue == "+") {
-                    newEquationValue += this.calcArray[index + 1].intNumberValue;
+                    newEquationValue += this.calcArray[index + 1].numberValue;
                 } else if (this.calcArray[index].stringValue == "-") {
-                    newEquationValue -= this.calcArray[index + 1].intNumberValue;
+                    newEquationValue -= this.calcArray[index + 1].numberValue;
                 }
             }
-            console.log(this.equationValue)
             this.equationValue = newEquationValue;
-            console.log(this.equationValue)
 
         };
 
+        const calcArrayCopy = [...this.calcArray]
         if (this.calcArray.length  >1){
             multiplicationAndDivision();
         }
         additionAndSubtraction();
-
+        this.calcArray = calcArrayCopy
 
         return completedCalculation
     }
 
+    function renewCurrentWorkingItem(){
+        const newWorkingItem = new ArrayItem("number", "", 0)
+        this.calcArray.push(newWorkingItem)
+        this.currentWorkingItem = newWorkingItem
+    }
+    function updateCurrentWorkingArrayItem(newCharToAdd){
+            console.log("before")
+            console.log(JSON.parse(JSON.stringify(this.currentWorkingItem)));
+            this.currentWorkingItem.stringValue += newCharToAdd
 
+            // assumes no comma
+            this.currentWorkingItem.numberValue*= 10
+            this.currentWorkingItem.numberValue += parseFloat(newCharToAdd)
+
+            console.log("after")
+            console.log(JSON.parse(JSON.stringify(this.currentWorkingItem)));
+            console.log("end")
+
+
+    }
+    let initialItem = new ArrayItem("number", "", 0)
     const Equation = {
-        calcArray: [],
+        calcArray: [initialItem],
         calculate: calculate,
         equationValue: 0,
+        currentWorkingItem:initialItem,
+        updateCurrentWorkingArrayItem:updateCurrentWorkingArrayItem,
+        renewCurrentWorkingItem:renewCurrentWorkingItem,
     };
 
     //------------------------------------------------------------------------------------------------------
@@ -148,13 +153,10 @@
 <div>
     <Display />
     <Keyboard
-        {clicks}
-        {updateClicks}
         on:buttonclick={(event) => handleClickEvent(event)}
     />
 </div>
 
-<h1>{clicks}</h1>
 
 <h1>{eq}</h1>
 
