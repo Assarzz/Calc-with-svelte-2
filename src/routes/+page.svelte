@@ -13,7 +13,10 @@
 
         if (event.detail.type == "number") {            
             Equation.updateCurrentWorkingArrayItem(event.detail.value)
-        } 
+        }
+        else if (event.detail.value == "."){
+            Equation.currentWorkingItem.hasComma = true
+        }
         else {
             Equation.calcArray.push(
                 new ArrayItem(event.detail.type, event.detail.value)
@@ -22,7 +25,7 @@
         }
 
         // if Equation is valid we can perform Equation.calculate()
-        console.log(Equation.calcArray)
+
         if(Equation.calculate()){
             eq = Equation.equationValue;
         }
@@ -40,6 +43,7 @@
             this.numberValue = numberValue;
             this.hasComma = this.type == "number" ? this.checkComma() : NaN;
             this.stringValue = stringValue;
+            this.numbersAfterComma = 0
         }
 
         checkComma() {
@@ -123,17 +127,21 @@
         this.currentWorkingItem = newWorkingItem
     }
     function updateCurrentWorkingArrayItem(newCharToAdd){
-            console.log("before")
-            console.log(JSON.parse(JSON.stringify(this.currentWorkingItem)));
+            //console.log(JSON.parse(JSON.stringify(this.currentWorkingItem)));
             this.currentWorkingItem.stringValue += newCharToAdd
 
             // assumes no comma
-            this.currentWorkingItem.numberValue*= 10
-            this.currentWorkingItem.numberValue += parseFloat(newCharToAdd)
+            if (this.currentWorkingItem.hasComma){
+                this.currentWorkingItem.numbersAfterComma ++
+                this.currentWorkingItem.numberValue += Math.pow(10, -this.currentWorkingItem.numbersAfterComma)*parseFloat(newCharToAdd)
+            }
+            else{
+                // no comma
+                this.currentWorkingItem.numberValue*= 10
+                this.currentWorkingItem.numberValue += parseFloat(newCharToAdd)
+            }
 
-            console.log("after")
-            console.log(JSON.parse(JSON.stringify(this.currentWorkingItem)));
-            console.log("end")
+
 
 
     }
@@ -151,14 +159,11 @@
 </script>
 
 <div>
-    <Display />
+    <Display {eq} />
     <Keyboard
         on:buttonclick={(event) => handleClickEvent(event)}
     />
 </div>
-
-
-<h1>{eq}</h1>
 
 <style>
     div {

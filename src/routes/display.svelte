@@ -1,9 +1,12 @@
 <script>
     import { displayValue } from './stores.js';
+    export let eq
+
 </script>
 
 <div id="display">
     <h1>{$displayValue}</h1>
+    <h1>{eq}</h1>
 </div>
 
 
@@ -19,7 +22,7 @@
         justify-content: right;
         align-items: center;
         
-
+        flex-direction: column;
         h1{
             color: white;
 

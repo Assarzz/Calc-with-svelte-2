@@ -26,7 +26,7 @@
     let col5 = [
         { value: "*", clicked: false, type: "operator"},
         { value: "/", clicked: false, type: "operator"},
-        { value: "=", clicked: false, type: "operator"},
+        { value: ".", clicked: false, type: "operator"},
 
     ]
 
