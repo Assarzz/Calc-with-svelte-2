@@ -17,10 +17,9 @@
 
         if (event.detail.type == "number") {
 
-            if (this.calcArray[this.calcArray.length-1].type == "number"){
-                // last element was number
-                this.calcArray[this.calcArray.length-1].updateValue(event.detail.value)
-            }
+
+            this.calcArray[this.calcArray.length-1].updateValue(event.detail.value)
+            
 
             Equation.calcArray.push(
                 new ArrayItem(
