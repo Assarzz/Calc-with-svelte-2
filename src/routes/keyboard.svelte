@@ -41,15 +41,20 @@
 
     function click(col, index){
 
-        dispatch("buttonclick", col[index])
 
         col[index].clicked = true
-
-
+        
         setTimeout(() => {
             col[index].clicked = false
         }, 500);
 
+        dispatch("buttonclick", col[index])
+
+    }
+    function registerClicked(){
+
+        console.log("register!")
+        return "clicked"
     }
 </script>
 
@@ -58,7 +63,7 @@
 
     <div class="col1">
         {#each col1 as key, index}
-            <button class="key {key.color}  {(key.clicked? "clicked": "")}" on:click={()=> click(col1, index)}>
+            <button class="key {key.color}  {(key.clicked? registerClicked(): "")}" on:click={()=> click(col1, index)}>
                 {key.value}
             </button>
         {/each}
@@ -114,17 +119,18 @@
                 display: flex;
                 justify-content: center;
 
+                transition: transform 0.1s;
                 .clicked{
-                    transform: scale(0.9);
-                }
+                        transform: scale(0.6);
+                    }
+
+
 
             }
 
         }
 
     }
-
-
 
     .red {
         background-color: rgba(200, 100, 1000, 0.6);
