@@ -106,36 +106,44 @@
             return completedCalculation;
         }
 
-        const parentheses = ()=>{
+        const parentheses = (theArray)=>{ // todo: make it work for non-nested parentheses. second todo: make it work for nested parentheses
 
-            for (let index = 1; index < this.calcArray.length; index++) {
-                if (this.calcArray[index].stringValue == "("){
-
+            let beg = 0
+            for (let index = 1; index < theArray.length; index++) {
+                if (theArray[index].stringValue == "("){
+                    beg = index
+                }
+                if (theArray[index].stringValue == ")"){
+                    const afterMul = multiplicationAndDivision(theArray.slice(beg+1, index))
+                    const afterAdd = additionAndSubtraction(afterMul)
+                    theArray = [...theArray.slice(0, beg), theArray.slice(index+1, theArray.length)]
+                    index -= (index-beg)
+                    
                 }
             }
 
 
         }
 
-        const multiplicationAndDivision = () => {
+        function multiplicationAndDivision(theArray){
 
-            for (let index = 0; index < this.calcArray.length; index++) {
-                if (this.calcArray[index].stringValue == "*") {
-                    let before = this.calcArray.slice(0, index - 1); // the arry before and after the two numbers should be joined with the new product in the middle.
-                    let after = this.calcArray.slice(index + 2);
-                    let newNumberValue = this.calcArray[index - 1].numberValue * this.calcArray[index + 1].numberValue;
+            for (let index = 0; index < theArray.length; index++) {
+                if (theArray[index].stringValue == "*") {
+                    let before = theArray.slice(0, index - 1); // the arry before and after the two numbers should be joined with the new product in the middle.
+                    let after = theArray.slice(index + 2);
+                    let newNumberValue = theArray[index - 1].numberValue * theArray[index + 1].numberValue;
                     let newValue = new ArrayItem(
                         "number",
                         newNumberValue.toString(),
                         newNumberValue
                     );
                     before.push(newValue);
-                    this.calcArray = before.concat(after);
+                    theArray = before.concat(after);
                     index -= 2; // since 2 numbers and 1 operation has produced 1 number(3 turned into 1), index needs to be decreased by 2.
-                } else if (this.calcArray[index].stringValue == "/") {
-                    let before = this.calcArray.slice(0, index - 1); // the arry before and after the two numbers should be joined with the new product in the middle.
-                    let after = this.calcArray.slice(index + 2);
-                    let newNumberValue = this.calcArray[index - 1].numberValue / this.calcArray[index + 1].numberValue;
+                } else if (theArray[index].stringValue == "/") {
+                    let before = theArray.slice(0, index - 1); // the arry before and after the two numbers should be joined with the new product in the middle.
+                    let after = theArray.slice(index + 2);
+                    let newNumberValue = theArray[index - 1].numberValue / theArray[index + 1].numberValue;
 
 
                     let newValue = new ArrayItem(
@@ -144,34 +152,36 @@
                         newNumberValue
                     );
                     before.push(newValue);
-                    this.calcArray = before.concat(after);
+                    theArray = before.concat(after);
                     index -= 2; // since 2 numbers and 1 operation has produced 1 number(3 turned into 1), index needs to be decreased by 2.
                 }
             }
 
+            return theArray
+
         };
-        const additionAndSubtraction = () => {
+        function additionAndSubtraction(theArray){
             let newEquationValue = 0;
-            newEquationValue += this.calcArray[0].numberValue;
-            for (let index = 1; index < this.calcArray.length; index++) {
+            newEquationValue += theArray[0].numberValue;
+            for (let index = 1; index < theArray.length; index++) {
 
-                if (this.calcArray[index].stringValue == "+") {
-                    newEquationValue += this.calcArray[index + 1].numberValue;
-                } else if (this.calcArray[index].stringValue == "-") {
-                    newEquationValue -= this.calcArray[index + 1].numberValue;
+                if (theArray[index].stringValue == "+") {
+                    newEquationValue += theArray[index + 1].numberValue;
+                } else if (theArray[index].stringValue == "-") {
+                    newEquationValue -= theArray[index + 1].numberValue;
                 }
             }
-            this.equationValue = newEquationValue;
+            //this.equationValue = newEquationValue;
+            return newEquationValue
 
         };
 
-        const calcArrayCopy = [...this.calcArray]
-        if (this.calcArray.length  >1){
-            multiplicationAndDivision();
-        }
-        additionAndSubtraction();
-        this.calcArray = calcArrayCopy
-
+        //const calcArrayCopy = [...this.calcArray]
+        
+        const afterMul = multiplicationAndDivision(this.calcArray);
+        const afterAdd = additionAndSubtraction(afterMul);
+        //this.calcArray = calcArrayCopy
+        this.equationValue = afterAdd
         return completedCalculation
     }
 
