@@ -4,11 +4,10 @@
     import { displayValue } from "./stores.js";
 
 
-    let eq = NaN;
+    let eq = 0;
 
     function validInput(input){
         if (input.type == "operator"){
-            console.log(input)
             if (this.allowOperator){
                 this.allowOperator = false
             }
@@ -22,21 +21,42 @@
         }
         return true
     }
-    const validator = {allowOperator:false, validInput:validInput}
+    let validator = {allowOperator:false, validInput:validInput}
 
 
     function handleClickEvent(event) {
 
+        let updateUI = true
+
         if (!validator.validInput(event.detail)){ // all my below code only handels valid input. It is this object's job to make sure we only pass on valid input
             return
         }
-        $displayValue += event.detail.value;
 
         if (event.detail.type == "number") {            
             Equation.updateCurrentWorkingArrayItem(event.detail.value)
         }
         else if (event.detail.value == "."){
             Equation.currentWorkingItem.hasComma = true
+        }
+        else if (event.detail.value == "c"){
+            let initialItem = new ArrayItem("number", "", 0)
+            const OriginalEquation = {
+                calcArray: [initialItem],
+                calculate: calculate,
+                equationValue: 0,
+                currentWorkingItem:initialItem,
+                updateCurrentWorkingArrayItem:updateCurrentWorkingArrayItem,
+                renewCurrentWorkingItem:renewCurrentWorkingItem,
+            };
+
+            Equation = {...Equation, ...OriginalEquation}
+
+            const Originalvalidator = {allowOperator:false, validInput:validInput}
+            validator = {...validator, ...Originalvalidator}
+
+            $displayValue = ""
+
+            updateUI = false
         }
         else { // meaning it's an operators
             Equation.calcArray.push(
@@ -45,7 +65,6 @@
             Equation.renewCurrentWorkingItem()
         }
 
-        // if Equation is valid we can perform Equation.calculate()
 
         if(Equation.calculate()){
             eq = Equation.equationValue;
@@ -53,10 +72,13 @@
         else{
             eq = "Error"
         }
-
-
+        if (updateUI){
+            $displayValue += event.detail.value;
+        }
 
     }
+
+    
 
     class ArrayItem {
         constructor(type, stringValue, numberValue = NaN) {
@@ -82,6 +104,17 @@
         if (this.calcArray[this.calcArray.length - 1].type == "operator") {
             completedCalculation = false
             return completedCalculation;
+        }
+
+        const parentheses = ()=>{
+
+            for (let index = 1; index < this.calcArray.length; index++) {
+                if (this.calcArray[index].stringValue == "("){
+
+                }
+            }
+
+
         }
 
         const multiplicationAndDivision = () => {
@@ -167,7 +200,7 @@
 
     }
     let initialItem = new ArrayItem("number", "", 0)
-    const Equation = {
+    let Equation = {
         calcArray: [initialItem],
         calculate: calculate,
         equationValue: 0,
@@ -181,12 +214,34 @@
 
 <div>
     <Display {eq} />
+
+    <br>
     <Keyboard
         on:buttonclick={(event) => handleClickEvent(event)}
     />
+
+    <br>
+    <footer>
+
+    </footer>
 </div>
 
-<style>
+<style lang="scss">
+
+    :global(body){
+        margin: 0%;
+        background-color: rgb(79, 67, 67);
+    }
+
+    footer{
+        background-color: rgb(52, 47, 47);
+        display: block;
+        width: 100%;
+        height: auto;
+    }
+    
+
+/**
     div {
         display: inline;
         margin: 100px;
@@ -197,4 +252,6 @@
         background-color: rgba(0, 0, 0, 0.85);
         border: 5px solid rgba(100, 255, 100, 0.5);
     }
+
+/*/
 </style>

@@ -22,13 +22,21 @@
     let col4 = [
         { value: "+", clicked: false, type: "operator"},
         { value: "-", clicked: false, type: "operator"},
+        { value: "(", clicked: false, type: "para"},
+        { value: ")", clicked: false, type: "para"},
     ]
     let col5 = [
+        { value: "c", clicked: false, type: "speciall"},
         { value: "*", clicked: false, type: "operator"},
         { value: "/", clicked: false, type: "operator"},
         { value: ".", clicked: false, type: "operator"},
 
     ]
+    $: col1 = [...col1]; 
+    $: col2 = [...col2]; 
+    $: col3 = [...col3];
+    $: col4 = [...col4];
+    $: col5 = [...col5];   
 
     const keyboard = [...col1, ...col2, ...col3, ...col4, ...col5];
 
@@ -38,24 +46,24 @@
         
     }
 
+    
+    function click(col, index) {
 
-    function click(col, index){
+    col[index].clicked = true;
+    //col1[index].clicked = true;
+
+    col = [...col]; 
+    setTimeout(() => {
+        col[index].clicked = false;
+        //col1[index].clicked = false;
+
+        col = [...col]; 
+    }, 500);
+
+    dispatch("buttonclick", col[index]);
+}
 
 
-        col[index].clicked = true
-        
-        setTimeout(() => {
-            col[index].clicked = false
-        }, 500);
-
-        dispatch("buttonclick", col[index])
-
-    }
-    function registerClicked(){
-
-        console.log("register!")
-        return "clicked"
-    }
 </script>
 
 
@@ -63,7 +71,7 @@
 
     <div class="col1">
         {#each col1 as key, index}
-            <button class="key {key.color}  {(key.clicked? registerClicked(): "")}" on:click={()=> click(col1, index)}>
+            <button class="key {key.color}  {(key.clicked? "clicked": "")}" on:click={()=> click(col1, index)}>
                 {key.value}
             </button>
         {/each}
@@ -102,43 +110,43 @@
     $def-border-radious: 10px;
 
     #keyboard{
-        display: inline-flex;
-        background-color: rgba(0, 0, 0, 0.1);
+        display: flex;
+        
         div{
             display: flex;
             flex-direction: column;
             justify-content: center;
+            flex: 1;
 
             button{
-                border-radius: 100px;
-                width: 100px;
-                height: 100px;
+                width: auto;
+                height: auto;
                 margin: 5px;
+                padding: 15px;
+                margin-left: 5px;
+                margin-right: 5px;
                 color: white;
-                font-size: 5rem;
+                font-size: 10rem;
                 display: flex;
                 justify-content: center;
-
+                font-family: "calcFont";
                 transition: transform 0.1s;
-                .clicked{
-                        transform: scale(0.6);
-                    }
-
-
 
             }
 
         }
 
     }
-
+    .clicked{
+        transform: scale(0.9);
+    }
     .red {
-        background-color: rgba(200, 100, 1000, 0.6);
+        background-color: rgba(103, 23, 23, 0.6);
     }
     .green {
-        background-color: rgba(100, 200, 100, 0.6);
+        background-color: rgba(42, 129, 42, 0.6);
     }
     .blue {
-        background-color: rgba(100, 100, 200, 0.6);
+        background-color: rgba(24, 24, 81, 0.6);
     }
 </style>
