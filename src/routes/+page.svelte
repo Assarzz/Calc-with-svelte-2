@@ -6,9 +6,30 @@
 
     let eq = NaN;
 
+    function validInput(input){
+        if (input.type == "operator"){
+            console.log(input)
+            if (this.allowOperator){
+                this.allowOperator = false
+            }
+            else{
+                return false
+            }
+        }
+
+        if (input.type == "number") {
+            this.allowOperator = true
+        }
+        return true
+    }
+    const validator = {allowOperator:false, validInput:validInput}
+
 
     function handleClickEvent(event) {
 
+        if (!validator.validInput(event.detail)){ // all my below code only handels valid input. It is this object's job to make sure we only pass on valid input
+            return
+        }
         $displayValue += event.detail.value;
 
         if (event.detail.type == "number") {            
@@ -17,7 +38,7 @@
         else if (event.detail.value == "."){
             Equation.currentWorkingItem.hasComma = true
         }
-        else {
+        else { // meaning it's an operators
             Equation.calcArray.push(
                 new ArrayItem(event.detail.type, event.detail.value)
             );
@@ -130,7 +151,7 @@
             //console.log(JSON.parse(JSON.stringify(this.currentWorkingItem)));
             this.currentWorkingItem.stringValue += newCharToAdd
 
-            // assumes no comma
+            // has comma
             if (this.currentWorkingItem.hasComma){
                 this.currentWorkingItem.numbersAfterComma ++
                 this.currentWorkingItem.numberValue += Math.pow(10, -this.currentWorkingItem.numbersAfterComma)*parseFloat(newCharToAdd)
