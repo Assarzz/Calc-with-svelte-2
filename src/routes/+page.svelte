@@ -8,20 +8,28 @@
 
     function validInput(input){
         if (input.type == "operator"){
-            if (this.allowOperator){
-                this.allowOperator = false
+            if (!this.lastInputWasOperator){
+                this.lastInputWasOperator = true
             }
             else{
+                return false
+            }
+
+            
+        }
+        if (input.value == "(" ){
+
+            if( !this.lastInputWasOperator){
                 return false
             }
         }
 
         if (input.type == "number") {
-            this.allowOperator = true
+            this.lastInputWasOperator = false
         }
         return true
     }
-    let validator = {allowOperator:false, validInput:validInput}
+    let validator = {lastInputWasOperator:false, validInput:validInput}
 
 
     function handleClickEvent(event) {
@@ -39,6 +47,7 @@
             Equation.currentWorkingItem.hasComma = true
         }
         else if (event.detail.value == "c"){
+
             let initialItem = new ArrayItem("number", "", 0)
             const OriginalEquation = {
                 calcArray: [initialItem],
@@ -51,42 +60,56 @@
 
             Equation = {...Equation, ...OriginalEquation}
 
-            const Originalvalidator = {allowOperator:false, validInput:validInput}
+            const Originalvalidator = {lastInputWasOperator:false, validInput:validInput}
             validator = {...validator, ...Originalvalidator}
 
             $displayValue = ""
 
             updateUI = false
         }
-        else { // meaning it's an operators
-            Equation.calcArray.push(
+        else if (event.detail.type == "para"){
+
+            if (event.detail.value == "("){
+                const newArrayArray = new ArrayArray(Equation.currentWorkingArray)
+                Equation.currentWorkingArray = newArrayArray
+
+                Equation.turnCurrentWorkingItemToArrayArray(newArrayArray)
+                Equation.renewCurrentWorkingItem()
+
+            }
+            else if (event.detail.value == ")"){
+                
+                Equation.currentWorkingArray = Equation.currentWorkingArray.parent
+
+            }
+        }
+        else { // meaning it's an operator
+            Equation.currentWorkingArray.array.push(
                 new ArrayItem(event.detail.type, event.detail.value)
             );
             Equation.renewCurrentWorkingItem()
         }
 
-
-        if(Equation.calculate()){
-            eq = Equation.equationValue;
-        }
-        else{
-            eq = "Error"
-        }
+        Equation.calculate()
+        eq = Equation.equationValue;
+        
         if (updateUI){
             $displayValue += event.detail.value;
         }
 
+        console.log(Equation.calcArray)
     }
 
     
 
     class ArrayItem {
-        constructor(type, stringValue, numberValue = NaN) {
+        constructor(type, stringValue, numberValue = NaN, parent) {
             this.type = type;
             this.numberValue = numberValue;
             this.hasComma = this.type == "number" ? this.checkComma() : NaN;
             this.stringValue = stringValue;
             this.numbersAfterComma = 0
+            this.parent = parent
         }
 
         checkComma() {
@@ -96,42 +119,29 @@
             return false;
         }
     }
-
-    function calculate() {
-
-        let completedCalculation = true
-
-        if (this.calcArray[this.calcArray.length - 1].type == "operator") {
-            completedCalculation = false
-            return completedCalculation;
+    class ArrayArray{
+        constructor(parent, array=[]){
+            this.array = array
+            this.parent = parent
+            this.pObject = true
+            
         }
+    }
 
-        const parentheses = (theArray)=>{ // todo: make it work for non-nested parentheses. second todo: make it work for nested parentheses
+    function recursiveCalculate(theArray){
 
-            let beg = 0
-            for (let index = 1; index < theArray.length; index++) {
-                if (theArray[index].stringValue == "("){
-                    beg = index
-                }
-                if (theArray[index].stringValue == ")"){
-                    const afterMul = multiplicationAndDivision(theArray.slice(beg+1, index))
-                    const afterAdd = additionAndSubtraction(afterMul)
-                    theArray = [...theArray.slice(0, beg), theArray.slice(index+1, theArray.length)]
-                    index -= (index-beg)
-                    
-                }
-            }
-
-
-        }
-
+        // this is completely a recursive function that is called in itself for all depths of parenthesis that there are.
         function multiplicationAndDivision(theArray){
-
+            console.log(theArray)
             for (let index = 0; index < theArray.length; index++) {
                 if (theArray[index].stringValue == "*") {
                     let before = theArray.slice(0, index - 1); // the arry before and after the two numbers should be joined with the new product in the middle.
                     let after = theArray.slice(index + 2);
-                    let newNumberValue = theArray[index - 1].numberValue * theArray[index + 1].numberValue;
+                    // kolla om Arrayitems är Parantes object. OM det är det använder vi recursion :)))
+
+                    const beforeItemValue = (theArray[index - 1].pObject? recursiveCalculate(theArray[index - 1].array): theArray[index - 1])
+                    const afterItemValue = (theArray[index + 1].pObject? recursiveCalculate(theArray[index + 1].array): theArray[index + 1])
+                    let newNumberValue = beforeItemValue.numberValue * afterItemValue.numberValue;
                     let newValue = new ArrayItem(
                         "number",
                         newNumberValue.toString(),
@@ -143,8 +153,10 @@
                 } else if (theArray[index].stringValue == "/") {
                     let before = theArray.slice(0, index - 1); // the arry before and after the two numbers should be joined with the new product in the middle.
                     let after = theArray.slice(index + 2);
-                    let newNumberValue = theArray[index - 1].numberValue / theArray[index + 1].numberValue;
+                    const beforeItemValue = (theArray[index - 1].pObject? recursiveCalculate(theArray[index - 1].array): theArray[index - 1])
+                    const afterItemValue = (theArray[index + 1].pObject? recursiveCalculate(theArray[index + 1].array): theArray[index + 1])
 
+                    let newNumberValue = beforeItemValue.numberValue / afterItemValue.numberValue;
 
                     let newValue = new ArrayItem(
                         "number",
@@ -162,13 +174,17 @@
         };
         function additionAndSubtraction(theArray){
             let newEquationValue = 0;
-            newEquationValue += theArray[0].numberValue;
+            
+            const initialAdd = (theArray[0].pObject? recursiveCalculate(theArray[0]): theArray[0])
+            newEquationValue += initialAdd.numberValue;
             for (let index = 1; index < theArray.length; index++) {
 
                 if (theArray[index].stringValue == "+") {
-                    newEquationValue += theArray[index + 1].numberValue;
+                    const afterItemValue = (theArray[index + 1].pObject? recursiveCalculate(theArray[index + 1].array): theArray[index + 1])
+                    newEquationValue += afterItemValue.numberValue;
                 } else if (theArray[index].stringValue == "-") {
-                    newEquationValue -= theArray[index + 1].numberValue;
+                    const afterItemValue = (theArray[index + 1].pObject? recursiveCalculate(theArray[index + 1].array): theArray[index + 1])
+                    newEquationValue -= afterItemValue.numberValue;
                 }
             }
             //this.equationValue = newEquationValue;
@@ -176,20 +192,39 @@
 
         };
 
-        //const calcArrayCopy = [...this.calcArray]
-        
-        const afterMul = multiplicationAndDivision(this.calcArray);
+        const afterMul = multiplicationAndDivision(theArray);
         const afterAdd = additionAndSubtraction(afterMul);
-        //this.calcArray = calcArrayCopy
-        this.equationValue = afterAdd
-        return completedCalculation
+
+        return new ArrayItem("number", toString(afterAdd), afterAdd)
+
+    }
+    function calculate() {
+
+        const finalArrayItem = recursiveCalculate([...this.calcArray.array])
+        this.equationValue = finalArrayItem.numberValue
     }
 
     function renewCurrentWorkingItem(){
         const newWorkingItem = new ArrayItem("number", "", 0)
-        this.calcArray.push(newWorkingItem)
+        this.currentWorkingArray.array.push(newWorkingItem)
         this.currentWorkingItem = newWorkingItem
     }
+    function turnCurrentWorkingItemToArrayArray(objectToAddPropsFrom) {
+
+        for (const key in this.currentWorkingItem) {
+            if (this.currentWorkingItem.hasOwnProperty(key)) {
+            delete this.currentWorkingItem[key];
+            }
+        }
+
+        for (const key in objectToAddPropsFrom) {
+            if (objectToAddPropsFrom.hasOwnProperty(key)) {
+            this.currentWorkingItem[key] = objectToAddPropsFrom[key];
+            }
+        }
+        
+}
+
     function updateCurrentWorkingArrayItem(newCharToAdd){
             //console.log(JSON.parse(JSON.stringify(this.currentWorkingItem)));
             this.currentWorkingItem.stringValue += newCharToAdd
@@ -210,13 +245,16 @@
 
     }
     let initialItem = new ArrayItem("number", "", 0)
+    let initialArray = new ArrayArray(NaN, [initialItem])
     let Equation = {
-        calcArray: [initialItem],
+        calcArray: initialArray,
         calculate: calculate,
         equationValue: 0,
         currentWorkingItem:initialItem,
+        currentWorkingArray: initialArray,
         updateCurrentWorkingArrayItem:updateCurrentWorkingArrayItem,
         renewCurrentWorkingItem:renewCurrentWorkingItem,
+        turnCurrentWorkingItemToArrayArray:turnCurrentWorkingItemToArrayArray,
     };
 
     //------------------------------------------------------------------------------------------------------
