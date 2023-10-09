@@ -49,13 +49,16 @@
         else if (event.detail.value == "c"){
 
             let initialItem = new ArrayItem("number", "", 0)
-            const OriginalEquation = {
-                calcArray: [initialItem],
+            let initialArray = new ArrayArray(NaN, [initialItem])
+            let OriginalEquation = {
+                calcArray: initialArray,
                 calculate: calculate,
                 equationValue: 0,
                 currentWorkingItem:initialItem,
+                currentWorkingArray: initialArray,
                 updateCurrentWorkingArrayItem:updateCurrentWorkingArrayItem,
                 renewCurrentWorkingItem:renewCurrentWorkingItem,
+                turnCurrentWorkingItemToArrayArray:turnCurrentWorkingItemToArrayArray,
             };
 
             Equation = {...Equation, ...OriginalEquation}

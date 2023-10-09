@@ -32,11 +32,7 @@
         { value: ".", clicked: false, type: "operator"},
 
     ]
-    $: col1 = [...col1]; 
-    $: col2 = [...col2]; 
-    $: col3 = [...col3];
-    $: col4 = [...col4];
-    $: col5 = [...col5];   
+
 
     const keyboard = [...col1, ...col2, ...col3, ...col4, ...col5];
 
@@ -49,15 +45,47 @@
     
     function click(col, index) {
 
-    col[index].clicked = true;
-    //col1[index].clicked = true;
+        switch (col) {
+            case col1:
+                col1[index].clicked = true
+                break
+            case col2:
+                col2[index].clicked = true
+                break
+            case col3:
+                col3[index].clicked = true
+                break
+            case col4:
+                col4[index].clicked = true
+                break
+            case col5:
+                col5[index].clicked = true
+                break
+            default:
+                break;
+        }
 
-    col = [...col]; 
     setTimeout(() => {
-        col[index].clicked = false;
-        //col1[index].clicked = false;
+        switch (col) {
+            case col1:
+                col1[index].clicked = false
+                break
+            case col2:
+                col2[index].clicked = false
+                break
+            case col3:
+                col3[index].clicked = false
+                break
+            case col4:
+                col4[index].clicked = false
+                break
+            case col5:
+                col5[index].clicked = false
+                break
+            default:
+                break;
+        }
 
-        col = [...col]; 
     }, 500);
 
     dispatch("buttonclick", col[index]);
@@ -122,11 +150,11 @@
                 width: auto;
                 height: auto;
                 margin: 5px;
-                padding: 15px;
+                padding: 10px;
                 margin-left: 5px;
                 margin-right: 5px;
                 color: white;
-                font-size: 10rem;
+                font-size: 8rem;
                 display: flex;
                 justify-content: center;
                 font-family: "calcFont";
